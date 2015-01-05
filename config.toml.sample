@@ -1,0 +1,40 @@
+[HttpInput]
+url = "http://YOUR.INFLUX.HOST:8086/db/DATABASE/series?u=USERNAME&p=PASSWORD&q=select%20host%2C%20count(host)%20from%20error%20group%20by%20host%20fill(0)%20where%20time%20%3E%20now()%20-%205m"
+ticker_interval = 300
+success_severity = 6
+error_severity = 1
+decoder = "KappaErrorsDecoder"
+
+[KappaErrorsDecoder]
+type = "SandboxDecoder"
+script_type = "lua"
+filename = "lua_decoders/kappa_errors.lua"
+
+	[KappaErrorsDecoder.config]
+	type = "KappaError"
+
+[PayloadEncoder]
+append_newlines = true
+
+[KappaAlertFilter]
+message_matcher = "Type == 'KappaError' && Fields[count] >= 10"
+type = "SandboxFilter"
+filename = "lua_filters/kappa_alert.lua"
+ticker_interval = 30
+
+[SlackEncoder]
+type = "SandboxEncoder"
+script_type = "lua"
+filename = "lua_encoders/slack.lua"
+
+[LogOutput]
+message_matcher = "Type == 'heka.sandbox-output' && Fields[payload_name] == 'KappaAlert'"
+encoder = "PayloadEncoder"
+
+[HttpOutput]
+address = "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"
+message_matcher = "Type == 'heka.sandbox-output' && Fields[payload_name] == 'KappaAlert'"
+encoder = "SlackEncoder"
+
+[DashboardOutput]
+ticker_interval = 300
