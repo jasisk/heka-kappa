@@ -6,10 +6,16 @@ local message = {
     icon_emoji = ":ghost:"
 }
 
+local min_severity = read_config("min_severity") or 8
+
 function process_message()
+    local severity = read_message("Severity")
     local msg = read_message("Payload")
-    msg = "<!channel>: " .. msg
+
+    if severity <= min_severity then msg = "<!channel>: " .. msg end
+
     message.text = msg
+
     add_to_payload(cjson.encode(message))
     inject_payload()
 
