@@ -1,6 +1,6 @@
 [HttpInput]
-url = "http://YOUR.INFLUX.HOST:8086/db/DATABASE/series?u=USERNAME&p=PASSWORD&q=select%20host%2C%20status%2C%20count(status)%20from%20request%20group%20by%20host%2C%20status%20where%20time%20%3E%20now()%20-%201m"
-ticker_interval = 60
+url = "http://YOUR.INFLUX.HOST:8086/db/DATABASE/series?u=USERNAME&p=PASSWORD&q=select%20host%2C%20status%2C%20count(status)%20from%20request%20group%20by%20host%2C%20status%2C%20time(5s)%20where%20time%20%3E%20now()%20-%2020s"
+ticker_interval = 20
 success_severity = 6
 error_severity = 1
 decoder = "KappaStatusDecoder"
@@ -11,22 +11,20 @@ script_type = "lua"
 filename = "lua_decoders/kappa_status.lua"
 
 	[KappaStatusDecoder.config]
-	type = "KappaStatus"
+	type = "kappa.status"
 
 [KappaAggregatorFilter]
 type = "SandboxFilter"
 script_type = "lua"
 filename = "lua_filters/kappa_aggregate.lua"
-message_matcher = "Type == 'KappaStatus'"
-ticker_interval = 10
+message_matcher = "Type == 'kappa.status'"
+ticker_interval = 20
 
   [KappaAggregatorFilter.config]
-  sec_per_row = 60
-  rows = 1440
-  anomaly_config = 'mww_nonparametric("4xx", 4, 15, 10, 0.6) mww_nonparametric("5xx", 5, 15, 10, 0.6)'
+  anomaly_config = 'mww_nonparametric("4xx", 4, 1, 4, 0.55) mww_nonparametric("5xx", 5, 1, 4, 0.55)'
 
 [DashboardOutput]
-ticker_interval = 10
+ticker_interval = 20
 
 [SlackEncoder]
 type = "SandboxEncoder"

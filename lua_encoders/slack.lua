@@ -9,7 +9,7 @@ local message = {
 local min_severity = read_config("min_severity") or 8
 
 function process_message()
-    local severity = read_message("Severity")
+    local severity = read_message("Severity") or 100
     local msg = read_message("Payload")
 
     if severity <= min_severity then msg = "<!channel>: " .. msg end

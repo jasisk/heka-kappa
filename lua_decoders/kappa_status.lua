@@ -43,7 +43,8 @@ function process_message()
     if json[1] ~= nil then
         local points = json[1]["points"]
         for i, row in ipairs(points) do
-            local count, host, status = row[2], row[3], row[4]
+            -- time is in milliseconds
+            local time, count, host, status = row[1], row[2], row[3], row[4]
             local ok, json = pcall(cjson.encode, row)
 
             if not ok then
@@ -54,6 +55,7 @@ function process_message()
                 Type = type,
                 Payload = json,
                 Hostname = host,
+                Timestamp = time * 1e6,
                 Fields = {
                     count = count,
                     status = status
